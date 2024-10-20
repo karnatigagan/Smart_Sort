@@ -21,4 +21,4 @@ SmartSortAI is an AI-powered file organizer that automatically categorizes files
 
 
 
->>>>>>> 022ea7f (Update README.md)
+>>>>>>> 
