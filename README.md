@@ -1,2 +1,2 @@
 # Smart_Sort
-Smart Sort - AI powered Custom File Explorer
+Smart Sort: AI powered Custom File Explorer
