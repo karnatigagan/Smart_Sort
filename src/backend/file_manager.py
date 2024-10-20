@@ -1,18 +1,35 @@
+# file_manager.py
 import os
 import shutil
+
 def move_file(src_path, dest_folder):
     """
     Moves a file from src_path to dest_folder.
-    Creates the destination folder if it doesn't exist.
+    If a file with the same name exists, appends a counter to the file name.
     """
     try:
         if not os.path.exists(dest_folder):
             os.makedirs(dest_folder)
-        shutil.move(src_path, dest_folder)
-        print(f"Moved file {src_path} to {dest_folder}")
+
+        filename = os.path.basename(src_path)
+        dest_path = os.path.join(dest_folder, filename)
+
+        # Check if the file already exists in the destination
+        if os.path.exists(dest_path):
+            base_name, extension = os.path.splitext(filename)
+            counter = 1
+            new_dest_path = os.path.join(dest_folder, f"{base_name}_{counter}{extension}")
+            # Increment the counter until a unique file name is found
+            while os.path.exists(new_dest_path):
+                counter += 1
+                new_dest_path = os.path.join(dest_folder, f"{base_name}_{counter}{extension}")
+            dest_path = new_dest_path
+
+        # Move the file to the destination folder
+        shutil.move(src_path, dest_path)
+        print(f"Moved file {src_path} to {dest_path}")
     except Exception as e:
         print(f"Error moving file: {e}")
-
 
 
 
