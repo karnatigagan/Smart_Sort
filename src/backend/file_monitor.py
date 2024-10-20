@@ -1,36 +1,130 @@
-import os
 import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from ai.classifier_ai import classify_and_categorize_file  # AI-based classification
-from backend.file_manager import move_file  # Use existing backend file manager
-
+from backend.file_manager import move_file
+from backend.file_categorizer import categorize_file
 class FileHandler(FileSystemEventHandler):
-    def __init__(self, classifier):
-        self.classifier = classifier
-
     def on_created(self, event):
-        if not event.is_directory:
-            print(f"New file detected: {event.src_path}")
-            time.sleep(3)  # Delay to ensure the file is fully written
-            category, dest_folder = self.classifier(event.src_path)
-            print(f"File categorized as: {category}")
-            try:
-                move_file(event.src_path, dest_folder)
-            except FileNotFoundError:
-                print(f"Source file not found: {event.src_path}")
-
-def start_monitoring(folder_to_monitor, classifier):
-    event_handler = FileHandler(classifier)
+        # When a new file is created, categorize and move it
+        file_path = event.src_path
+        print(f"New file detected: {file_path}")
+        
+        # Categorize the file
+        category = categorize_file(file_path)
+        
+        # Define the destination folder based on the category
+        if category == "Documents":
+            dest_folder = "/Users/gagankarnati/Documents" #"/path/to/Documents"
+        elif category == "Media":
+            dest_folder = "/Users/gagankarnati/Media" #"/path/to/Media"
+        elif category == "Images":
+            dest_folder = "/Users/gagankarnati/Images" #"/path/to/Images"
+        else:
+            dest_folder = "/Users/gagankarnati/Others" #"/path/to/Others"
+        
+        # Move the file
+        move_file(file_path, dest_folder)
+def start_monitoring(folder_to_monitor):
+    # Set up the observer to watch the specified folder
+    event_handler = FileHandler()
     observer = Observer()
-    observer.schedule(event_handler, folder_to_monitor, recursive=False)
+    observer.schedule(event_handler, path=folder_to_monitor, recursive=False)
     observer.start()
+    
+    print(f"Started monitoring folder: {folder_to_monitor}")
+    
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
+        print("Stopped monitoring.")
     observer.join()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from watchdog.observers import Observer
+# from watchdog.events import FileSystemEventHandler
+# import time
+
+# class FileHandler(FileSystemEventHandler):
+#     def on_created(self, event):
+#         print(f"File created: {event.src_path}")
+
+# if __name__ == "__main__":
+#     observer = Observer()
+#     folder_to_monitor = "/Users/gagankarnati/Downloads"  # Change this to your folder path
+#     event_handler = FileHandler()
+#     observer.schedule(event_handler, folder_to_monitor, recursive=False)
+#     observer.start()
+#     try:
+#         while True:
+#             time.sleep(1)
+#     except KeyboardInterrupt:
+#         observer.stop()
+#     observer.join()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import os
+# import time
+# from watchdog.observers import Observer
+# from watchdog.events import FileSystemEventHandler
+# from ai.classifier_ai import classify_and_categorize_file  # AI-based classification
+# from backend.file_manager import move_file  # Use existing backend file manager
+
+# class FileHandler(FileSystemEventHandler):
+#     def __init__(self, classifier):
+#         self.classifier = classifier
+
+#     def on_created(self, event):
+#         if not event.is_directory:
+#             print(f"New file detected: {event.src_path}")
+#             time.sleep(3)  # Delay to ensure the file is fully written
+#             category, dest_folder = self.classifier(event.src_path)
+#             print(f"File categorized as: {category}")
+#             try:
+#                 move_file(event.src_path, dest_folder)
+#             except FileNotFoundError:
+#                 print(f"Source file not found: {event.src_path}")
+
+# def start_monitoring(folder_to_monitor, classifier):
+#     event_handler = FileHandler(classifier)
+#     observer = Observer()
+#     observer.schedule(event_handler, folder_to_monitor, recursive=False)
+#     observer.start()
+#     try:
+#         while True:
+#             time.sleep(1)
+#     except KeyboardInterrupt:
+#         observer.stop()
+#     observer.join()
 
 
 

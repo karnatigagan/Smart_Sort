@@ -1,38 +1,69 @@
 import os
 import shutil
-
-# Helper function to move file to the appropriate category folder
 def move_file(src_path, dest_folder):
-    # Ensure the source file exists before trying to move it
-    if not os.path.exists(src_path):
-        print(f"Source file not found: {src_path}")
-        return
-
-    # Create the destination directory if it doesn't exist
-    if not os.path.exists(dest_folder):
-        os.makedirs(dest_folder)  # Create the directory if it doesn't exist
-
+    """
+    Moves a file from src_path to dest_folder.
+    Creates the destination folder if it doesn't exist.
+    """
     try:
-        filename = os.path.basename(src_path)
-        dest_path = os.path.join(dest_folder, filename)
-
-        # Check if file already exists in destination and append a number if so
-        if os.path.exists(dest_path):
-            base, ext = os.path.splitext(filename)
-            counter = 1
-            new_dest_path = os.path.join(dest_folder, f"{base}_{counter}{ext}")
-            while os.path.exists(new_dest_path):
-                counter += 1
-                new_dest_path = os.path.join(dest_folder, f"{base}_{counter}{ext}")
-            dest_path = new_dest_path
-
-        # Move the file
-        shutil.move(src_path, dest_path)
-        print(f"Moved file {src_path} to {dest_path}")
+        if not os.path.exists(dest_folder):
+            os.makedirs(dest_folder)
+        shutil.move(src_path, dest_folder)
+        print(f"Moved file {src_path} to {dest_folder}")
     except Exception as e:
         print(f"Error moving file: {e}")
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import os
+# import shutil
+
+# # Helper function to move file to the appropriate category folder
+# def move_file(src_path, dest_folder):
+#     if not os.path.exists(src_path):
+#         print(f"Source file not found: {src_path}")
+#         return
+
+#     if not os.path.exists(dest_folder):
+#         os.makedirs(dest_folder)
+
+#     try:
+#         filename = os.path.basename(src_path)
+#         dest_path = os.path.join(dest_folder, filename)
+#         if os.path.exists(dest_path):
+#             base, ext = os.path.splitext(filename)
+#             counter = 1
+#             new_dest_path = os.path.join(dest_folder, f"{base}_{counter}{ext}")
+#             while os.path.exists(new_dest_path):
+#                 counter += 1
+#                 new_dest_path = os.path.join(dest_folder, f"{base}_{counter}{ext}")
+#             dest_path = new_dest_path
+
+#         shutil.move(src_path, dest_path)
+#         print(f"Moved file {src_path} to {dest_path}")
+#     except Exception as e:
+#         print(f"Error moving file: {e}")
 
 
 
