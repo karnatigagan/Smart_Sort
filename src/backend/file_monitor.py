@@ -1,45 +1,190 @@
-import time
-from watchdog.observers import Observer
+import os
 from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 from backend.file_manager import move_file
 from backend.file_categorizer import categorize_file
+from ai.ai_categorizer import categorize_with_ai
+
 class FileHandler(FileSystemEventHandler):
     def on_created(self, event):
-        # When a new file is created, categorize and move it
-        file_path = event.src_path
-        print(f"New file detected: {file_path}")
-        
-        # Categorize the file
-        category = categorize_file(file_path)
-        
-        # Define the destination folder based on the category
-        if category == "Documents":
-            dest_folder = "/Users/gagankarnati/Documents" #"/path/to/Documents"
-        elif category == "Media":
-            dest_folder = "/Users/gagankarnati/Media" #"/path/to/Media"
-        elif category == "Images":
-            dest_folder = "/Users/gagankarnati/Images" #"/path/to/Images"
-        else:
-            dest_folder = "/Users/gagankarnati/Others" #"/path/to/Others"
-        
-        # Move the file
-        move_file(file_path, dest_folder)
+        if not event.is_directory:
+            file_path = event.src_path
+            file_name = os.path.basename(file_path)
+            print(f"New file detected: {file_path}")
+            
+            # Initial categorization based on file type
+            category = categorize_file(file_path)
+
+            # Define the destination folder based on the category
+            if category == "Documents":
+                dest_folder = "/Users/gagankarnati/Documents"
+            elif category == "Media":
+                dest_folder = "/Users/gagankarnati/Media"
+            elif category == "Images":
+                dest_folder = "/Users/gagankarnati/Images"
+            else:
+                dest_folder = "/Users/gagankarnati/Others"
+
+            # Ensure the destination folder exists
+            if not os.path.exists(dest_folder):
+                os.makedirs(dest_folder)
+                
+            # Move the file to the main category folder (e.g., Documents)
+            move_file(file_path, dest_folder)
+
+            # Now apply AI-based categorization to move into a subfolder
+            print(f"AI categorization in progress for {file_name}...")
+            ai_category = categorize_with_ai(file_name)
+
+            # Create subfolder inside the main category
+            final_dest_folder = os.path.join(dest_folder, ai_category)
+            if not os.path.exists(final_dest_folder):
+                os.makedirs(final_dest_folder)
+
+            # Move the file into the AI-categorized subfolder
+            move_file(file_path, final_dest_folder)
+
 def start_monitoring(folder_to_monitor):
     # Set up the observer to watch the specified folder
     event_handler = FileHandler()
     observer = Observer()
     observer.schedule(event_handler, path=folder_to_monitor, recursive=False)
     observer.start()
-    
+
     print(f"Started monitoring folder: {folder_to_monitor}")
-    
+
     try:
         while True:
-            time.sleep(1)
+            pass  # Keep running
     except KeyboardInterrupt:
         observer.stop()
-        print("Stopped monitoring.")
     observer.join()
+
+
+
+
+
+
+
+
+
+# import os
+# import time
+# from watchdog.observers import Observer
+# from watchdog.events import FileSystemEventHandler
+# from backend.file_manager import move_file
+# from backend.file_categorizer import categorize_file
+# from ai.openai_utils import get_gpt_category  # Import the GPT categorization
+
+# class FileHandler(FileSystemEventHandler):
+#     def on_created(self, event):
+#         if not event.is_directory:
+#             file_path = event.src_path
+#             print(f"New file detected: {file_path}")
+
+#             # Categorize the file into basic categories (Documents, Media, etc.)
+#             category = categorize_file(file_path)
+
+#             # Define the destination folder based on the category
+#             if category == "Documents":
+#                 dest_folder = "/Users/gagankarnati/Documents"
+#             elif category == "Media":
+#                 dest_folder = "/Users/gagankarnati/Media"
+#             elif category == "Images":
+#                 dest_folder = "/Users/gagankarnati/Images"
+#             else:
+#                 dest_folder = "/Users/gagankarnati/Others"
+
+#             # Move the file to the basic category folder
+#             move_file(file_path, dest_folder)
+
+#             # Now apply AI categorization on the file name
+#             file_name = os.path.basename(file_path)
+#             print(f"Applying AI to categorize: {file_name}")
+#             ai_category = get_gpt_category(file_name)  # Use GPT to categorize by title
+#             print(f"AI categorized {file_name} as: {ai_category}")
+
+#             # Create subfolder for AI category
+#             ai_category_folder = os.path.join(dest_folder, ai_category.replace(" ", "_"))
+#             if not os.path.exists(ai_category_folder):
+#                 os.makedirs(ai_category_folder)
+
+#             # Move the file into the AI categorized subfolder
+#             print(f"Moving file {file_name} to AI folder: {ai_category_folder}")
+#             move_file(file_path, ai_category_folder)
+
+# def start_monitoring(folder_to_monitor):
+#     # Set up the observer to watch the specified folder
+#     event_handler = FileHandler()
+#     observer = Observer()
+#     observer.schedule(event_handler, path=folder_to_monitor, recursive=False)
+#     observer.start()
+
+#     print(f"Started monitoring folder: {folder_to_monitor}")
+
+#     try:
+#         while True:
+#             time.sleep(1)
+#     except KeyboardInterrupt:
+#         observer.stop()
+#         print("Stopped monitoring.")
+#     observer.join()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import time
+# from watchdog.observers import Observer
+# from watchdog.events import FileSystemEventHandler
+# from backend.file_manager import move_file
+# from backend.file_categorizer import categorize_file
+# class FileHandler(FileSystemEventHandler):
+#     def on_created(self, event):
+#         # When a new file is created, categorize and move it
+#         file_path = event.src_path
+#         print(f"New file detected: {file_path}")
+        
+#         # Categorize the file
+#         category = categorize_file(file_path)
+        
+#         # Define the destination folder based on the category
+#         if category == "Documents":
+#             dest_folder = "/Users/gagankarnati/Documents" #"/path/to/Documents"
+#         elif category == "Media":
+#             dest_folder = "/Users/gagankarnati/Media" #"/path/to/Media"
+#         elif category == "Images":
+#             dest_folder = "/Users/gagankarnati/Images" #"/path/to/Images"
+#         else:
+#             dest_folder = "/Users/gagankarnati/Others" #"/path/to/Others"
+        
+#         # Move the file
+#         move_file(file_path, dest_folder)
+# def start_monitoring(folder_to_monitor):
+#     # Set up the observer to watch the specified folder
+#     event_handler = FileHandler()
+#     observer = Observer()
+#     observer.schedule(event_handler, path=folder_to_monitor, recursive=False)
+#     observer.start()
+    
+#     print(f"Started monitoring folder: {folder_to_monitor}")
+    
+#     try:
+#         while True:
+#             time.sleep(1)
+#     except KeyboardInterrupt:
+#         observer.stop()
+#         print("Stopped monitoring.")
+#     observer.join()
 
 
 

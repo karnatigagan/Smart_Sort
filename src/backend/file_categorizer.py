@@ -25,3 +25,8 @@ def categorize_file(file_name):
         return "Images"
     else:
         return "Others"
+    
+
+
+
+
