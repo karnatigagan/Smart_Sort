@@ -1,9 +1,10 @@
 import os
-from watchdog.events import FileSystemEventHandler
+import time
 from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 from backend.file_manager import move_file
 from backend.file_categorizer import categorize_file
-from ai.ai_categorizer import categorize_with_ai
+from ai.openai_utils import categorize_with_ai  # AI-based categorization
 
 class FileHandler(FileSystemEventHandler):
     def on_created(self, event):
@@ -11,11 +12,11 @@ class FileHandler(FileSystemEventHandler):
             file_path = event.src_path
             file_name = os.path.basename(file_path)
             print(f"New file detected: {file_path}")
-            
-            # Initial categorization based on file type
+
+            # Categorize the file based on type (Documents, Media, etc.)
             category = categorize_file(file_path)
 
-            # Define the destination folder based on the category
+            # Set the destination folder based on the type category
             if category == "Documents":
                 dest_folder = "/Users/gagankarnati/Documents"
             elif category == "Media":
@@ -25,24 +26,33 @@ class FileHandler(FileSystemEventHandler):
             else:
                 dest_folder = "/Users/gagankarnati/Others"
 
-            # Ensure the destination folder exists
-            if not os.path.exists(dest_folder):
-                os.makedirs(dest_folder)
-                
-            # Move the file to the main category folder (e.g., Documents)
-            move_file(file_path, dest_folder)
+            # Move the file to the initial destination folder
+            new_file_path = move_file(file_path, dest_folder)
 
-            # Now apply AI-based categorization to move into a subfolder
-            print(f"AI categorization in progress for {file_name}...")
-            ai_category = categorize_with_ai(file_name)
+            if new_file_path is not None:
+                print(f"Moved file {file_path} to {new_file_path}")
 
-            # Create subfolder inside the main category
-            final_dest_folder = os.path.join(dest_folder, ai_category)
-            if not os.path.exists(final_dest_folder):
-                os.makedirs(final_dest_folder)
+                # AI categorization
+                print(f"AI categorization in progress for {file_name}...")
+                ai_category = categorize_with_ai(file_name)
+                if ai_category:
+                    # Convert AI category to a valid folder name
+                    ai_folder_name = ai_category.replace(" ", "_").replace("/", "_")
+                    final_dest_folder = os.path.join(dest_folder, ai_folder_name)
 
-            # Move the file into the AI-categorized subfolder
-            move_file(file_path, final_dest_folder)
+                    # Ensure the AI-based destination folder exists
+                    if not os.path.exists(final_dest_folder):
+                        os.makedirs(final_dest_folder)
+                        print(f"Created AI category folder: {final_dest_folder}")
+
+                    # Move the file to the AI-based destination folder
+                    final_file_path = os.path.join(final_dest_folder, os.path.basename(new_file_path))
+                    move_file(new_file_path, final_file_path)
+                    print(f"Moved file {new_file_path} to {final_file_path}")
+                else:
+                    print(f"AI categorization returned no folder for {file_name}, skipping AI-based organization.")
+            else:
+                print(f"Error: File move failed for {file_path}, skipping AI categorization.")
 
 def start_monitoring(folder_to_monitor):
     # Set up the observer to watch the specified folder
@@ -55,18 +65,11 @@ def start_monitoring(folder_to_monitor):
 
     try:
         while True:
-            pass  # Keep running
+            time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
+        print("Stopped monitoring.")
     observer.join()
-
-
-
-
-
-
-
-
 
 # import os
 # import time

@@ -1,53 +1,38 @@
-# openai_utils.py
-import openai
 import os
+import openai
 
-# Ensure the API key is set in the environment variables
+# Set up OpenAI API key from environment variables
 openai_api_key = os.getenv('OPENAI_API_KEY')
 if openai_api_key is None:
     raise ValueError("OpenAI API key is not set in the environment.")
 
 openai.api_key = openai_api_key
 
-def get_gpt_category(file_title):
+def categorize_with_ai(file_name):
     """
-    Sends the file title to OpenAI GPT and returns a suggested category.
+    Use OpenAI GPT-4 to categorize files based on their title.
     """
     try:
-        prompt = f"Categorize the following file based on its title: '{file_title}'. What category does this file belong to? Respond with a single word such as 'Reports', 'Invoices', 'Manuals', 'Images', 'Media', 'Documents', etc."
-
+        print(f"Feeding title '{file_name}' into GPT-4 for categorization...")
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # You can use "gpt-4" if you have access
+            model="gpt-4",
             messages=[
-                {"role": "system", "content": "You are an assistant that classifies files based on their titles."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=10  # We only need a short response
+                {
+                    "role": "system",
+                    "content": "You are a file categorization assistant. Given a file title, categorize the file and suggest a folder name."
+                },
+                {
+                    "role": "user",
+                    "content": f"Categorize the file titled: {file_name}"
+                }
+            ]
         )
-
         category = response['choices'][0]['message']['content'].strip()
-        print(f"GPT categorized the file '{file_title}' as: {category}")
+        print(f"AI categorized {file_name} as: {category}")
         return category
     except Exception as e:
-        print(f"Error during GPT categorization: {e}")
+        print(f"Error categorizing with GPT: {e}")
         return None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
